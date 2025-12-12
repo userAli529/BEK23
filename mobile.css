@@ -1,0 +1,166 @@
+/* =========================
+   MOBILE ONLY CSS
+   ========================= */
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f4f4;
+  color: #222;
+  line-height: 1.4;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Layout */
+.container {
+  width: 100%;
+  padding: 16px;
+}
+
+/* Typography */
+h1 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+/* Links */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:active {
+  opacity: 0.7;
+}
+
+/* Buttons */
+button,
+.btn {
+  display: block;
+
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:active {
+  background-color: #0056b3;
+}
+
+/* Forms */
+form {
+  width: 100%;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Cards */
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Header */
+.header {
+  width: 100%;
+  padding: 14px;
+
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Footer */
+.footer {
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #777;
+}
+
+/* Lists */
+ul {
+  list-style: none;
+}
+
+li {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* Utility */
+.text-center {
+  text-align: center;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+.mt-20 {
+  margin-top: 20px;
+}
+.mb-10 {
+  margin-bottom: 10px;
+}
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+/* Hide desktop elements */
+.desktop {
+  display: none !important;
+}
