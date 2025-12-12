@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Полный справочник CSS — Свойства и примеры</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #081225;
+        --card: #071022;
+        --muted: #9fb0c3;
+        --text: #eaf6ff;
+        --accent: #7dd3fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #041223, #03101a);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .brand {
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .toc {
+        overflow: auto;
+        height: calc(100vh - 170px);
+        padding-right: 8px;
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        border-radius: 6px;
+        color: var(--muted);
+        text-decoration: none;
+        margin-bottom: 6px;
+      }
+      .toc a:hover {
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .main {
+        padding: 28px;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: var(--card);
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .prop {
+        font-weight: 700;
+        color: var(--accent);
+        font-size: 15px;
+      }
+      .desc {
+        margin: 8px 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      pre {
+        background: #042633;
+        color: #bff0ff;
+        padding: 12px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 13px;
+      }
+      code {
+        font-family: Consolas, monospace;
+        font-size: 13px;
+      }
+      .copy {
+        float: right;
+        background: transparent;
+        border: 0;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      footer.small {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 18px;
+      }
+      @media (max-width: 900px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          display: none;
+        }
+        .main {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">CSS — Полный справочник</div>
+        <div class="search">
+          <input
+            id="q"
+            placeholder="Поиск свойства (напр. transform)"
+            autocomplete="off"
+          />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+        <div class="toc" id="toc"></div>
+        <div
+          style="
+            position: absolute;
+            left: 20px;
+            bottom: 18px;
+            color: var(--muted);
+            font-size: 13px;
+          "
+        >
+          Interactive — примеры и копирование
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">Полное объяснение CSS-свойств</div>
+            <div class="desc" style="margin-top: 6px">
+              Справочник по свойствам CSS с примерами и быстрым копированием
+              кода.
+            </div>
+          </div>
+          <div class="controls">
+            <button class="btn" id="print">Печать (PDF)</button>
+            <a class="btn" href="..//index.html">Home</a>
+          </div>
+        </div>
+
+        <section id="content" class="grid"></section>
+
+        <footer class="small">
+          Включены часто используемые и ключевые CSS-свойства: позиционирование,
+          типографика, раскладки, фон, трансформы, анимации, переменные и пр.
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      const PROPS = [
+        {
+          id: "display",
+          prop: "display",
+          group: "Layout",
+          desc: "Определяет тип отображения элемента.",
+          example: "display: block; /* inline, flex, grid, none */",
+        },
+        {
+          id: "position",
+          prop: "position",
+          group: "Layout",
+          desc: "Способ позиционирования элемента.",
+          example: "position: relative; /* static, absolute, fixed, sticky */",
+        },
+        {
+          id: "top",
+          prop: "top",
+          group: "Layout",
+          desc: "Смещение сверху при позиционировании.",
+          example: "top: 10px;",
+        },
+        {
+          id: "right",
+          prop: "right",
+          group: "Layout",
+          desc: "Смещение справа при позиционировании.",
+          example: "right: 0;",
+        },
+        {
+          id: "bottom",
+          prop: "bottom",
+          group: "Layout",
+          desc: "Смещение снизу при позиционировании.",
+          example: "bottom: 10px;",
+        },
+        {
+          id: "left",
+          prop: "left",
+          group: "Layout",
+          desc: "Смещение слева при позиционировании.",
+          example: "left: 0;",
+        },
+        {
+          id: "float",
+          prop: "float",
+          group: "Layout",
+          desc: "Обтекание элемента.",
+          example: "float: left;",
+        },
+        {
+          id: "clear",
+          prop: "clear",
+          group: "Layout",
+          desc: "Отключение обтекания.",
+          example: "clear: both;",
+        },
+        {
+          id: "z-index",
+          prop: "z-index",
+          group: "Layout",
+          desc: "Порядок по оси Z для позиционированных элементов.",
+          example: "z-index: 10;",
+        },
+        {
+          id: "overflow",
+          prop: "overflow",
+          group: "Layout",
+          desc: "Управляет переполнением содержимого.",
+          example: "overflow: auto; /* hidden, scroll, visible */",
+        },
+        {
+          id: "width",
+          prop: "width",
+          group: "Box model",
+          desc: "Ширина элемента.",
+          example: "width: 100%;",
+        },
+        {
+          id: "height",
+          prop: "height",
+          group: "Box model",
+          desc: "Высота элемента.",
+          example: "height: 200px;",
+        },
+        {
+          id: "max-width",
+          prop: "max-width",
+          group: "Box model",
+          desc: "Максимальная ширина.",
+          example: "max-width: 1200px;",
+        },
+        {
+          id: "min-width",
+          prop: "min-width",
+          group: "Box model",
+          desc: "Минимальная ширина.",
+          example: "min-width: 320px;",
+        },
+        {
+          id: "max-height",
+          prop: "max-height",
+          group: "Box model",
+          desc: "Максимальная высота.",
+          example: "max-height: 800px;",
+        },
+        {
+          id: "min-height",
+          prop: "min-height",
+          group: "Box model",
+          desc: "Минимальная высота.",
+          example: "min-height: 100px;",
+        },
+        {
+          id: "box-sizing",
+          prop: "box-sizing",
+          group: "Box model",
+          desc: "Как считать ширину/высоту (content-box или border-box).",
+          example: "box-sizing: border-box;",
+        },
+        {
+          id: "margin",
+          prop: "margin",
+          group: "Box model",
+          desc: "Внешний отступ вокруг элемента.",
+          example: "margin: 16px 0;",
+        },
+        {
+          id: "margin-top",
+          prop: "margin-top",
+          group: "Box model",
+          desc: "Внешний отступ сверху.",
+          example: "margin-top: 8px;",
+        },
+        {
+          id: "margin-right",
+          prop: "margin-right",
+          group: "Box model",
+          desc: "Внешний отступ справа.",
+          example: "margin-right: 8px;",
+        },
+        {
+          id: "margin-bottom",
+          prop: "margin-bottom",
+          group: "Box model",
+          desc: "Внешний отступ снизу.",
+          example: "margin-bottom: 8px;",
+        },
+        {
+          id: "margin-left",
+          prop: "margin-left",
+          group: "Box model",
+          desc: "Внешний отступ слева.",
+          example: "margin-left: 8px;",
+        },
+        {
+          id: "padding",
+          prop: "padding",
+          group: "Box model",
+          desc: "Внутренний отступ внутри элемента.",
+          example: "padding: 12px;",
+        },
+        {
+          id: "padding-top",
+          prop: "padding-top",
+          group: "Box model",
+          desc: "Внутренний отступ сверху.",
+          example: "padding-top: 6px;",
+        },
+        {
+          id: "padding-right",
+          prop: "padding-right",
+          group: "Box model",
+          desc: "Внутренний отступ справа.",
+          example: "padding-right: 6px;",
+        },
+        {
+          id: "padding-bottom",
+          prop: "padding-bottom",
+          group: "Box model",
+          desc: "Внутренний отступ снизу.",
+          example: "padding-bottom: 6px;",
+        },
+        {
+          id: "padding-left",
+          prop: "padding-left",
+          group: "Box model",
+          desc: "Внутренний отступ слева.",
+          example: "padding-left: 6px;",
+        },
+        {
+          id: "display-flex",
+          prop: "flex",
+          group: "Flexbox & Grid",
+          desc: "Короткая запись для гибкой модели (часто: display:flex).",
+          example: "display: flex;",
+        },
+        {
+          id: "flex-direction",
+          prop: "flex-direction",
+          group: "Flexbox & Grid",
+          desc: "Направление оси flex-контейнера.",
+          example: "flex-direction: row; /* column */",
+        },
+        {
+          id: "flex-wrap",
+          prop: "flex-wrap",
+          group: "Flexbox & Grid",
+          desc: "Перенос элементов в flex-контейнере.",
+          example: "flex-wrap: wrap;",
+        },
+        {
+          id: "justify-content",
+          prop: "justify-content",
+          group: "Flexbox & Grid",
+          desc: "Выравнивание вдоль основной оси.",
+          example: "justify-content: center;",
+        },
+        {
+          id: "align-items",
+          prop: "align-items",
+          group: "Flexbox & Grid",
+          desc: "Выравнивание вдоль поперечной оси.",
+          example: "align-items: stretch;",
+        },
+        {
+          id: "align-content",
+          prop: "align-content",
+          group: "Flexbox & Grid",
+          desc: "Выравнивание строк flex-контейнера.",
+          example: "align-content: space-between;",
+        },
+        {
+          id: "gap",
+          prop: "gap",
+          group: "Flexbox & Grid",
+          desc: "Расстояние между элементами в flex/grid.",
+          example: "gap: 16px;",
+        },
+        {
+          id: "grid-template-columns",
+          prop: "grid-template-columns",
+          group: "Flexbox & Grid",
+          desc: "Определяет колонки сетки.",
+          example: "grid-template-columns: 1fr 2fr;",
+        },
+        {
+          id: "grid-template-rows",
+          prop: "grid-template-rows",
+          group: "Flexbox & Grid",
+          desc: "Определяет строки сетки.",
+          example: "grid-template-rows: auto 1fr;",
+        },
+        {
+          id: "grid-column",
+          prop: "grid-column",
+          group: "Flexbox & Grid",
+          desc: "Позиционирование элемента по колонкам.",
+          example: "grid-column: 1 / -1;",
+        },
+        {
+          id: "grid-row",
+          prop: "grid-row",
+          group: "Flexbox & Grid",
+          desc: "Позиционирование элемента по строкам.",
+          example: "grid-row: 1 / 2;",
+        },
+        {
+          id: "font-family",
+          prop: "font-family",
+          group: "Typography",
+          desc: "Шрифты для текста.",
+          example: "font-family: Inter, system-ui, sans-serif;",
+        },
+        {
+          id: "font-size",
+          prop: "font-size",
+          group: "Typography",
+          desc: "Размер шрифта.",
+          example: "font-size: 16px;",
+        },
+        {
+          id: "font-weight",
+          prop: "font-weight",
+          group: "Typography",
+          desc: "Толщина шрифта.",
+          example: "font-weight: 700;",
+        },
+        {
+          id: "line-height",
+          prop: "line-height",
+          group: "Typography",
+          desc: "Высота строки.",
+          example: "line-height: 1.5;",
+        },
+        {
+          id: "letter-spacing",
+          prop: "letter-spacing",
+          group: "Typography",
+          desc: "Межбуквенный интервал.",
+          example: "letter-spacing: 0.02em;",
+        },
+        {
+          id: "text-align",
+          prop: "text-align",
+          group: "Typography",
+          desc: "Выравнивание текста.",
+          example: "text-align: center;",
+        },
+        {
+          id: "text-decoration",
+          prop: "text-decoration",
+          group: "Typography",
+          desc: "Подчёркивание, зачёркивание, стиль линии.",
+          example: "text-decoration: underline;",
+        },
+        {
+          id: "text-transform",
+          prop: "text-transform",
+          group: "Typography",
+          desc: "Преобразование регистра текста.",
+          example: "text-transform: uppercase;",
+        },
+        {
+          id: "color",
+          prop: "color",
+          group: "Visual",
+          desc: "Цвет текста.",
+          example: "color: #0f1724;",
+        },
+        {
+          id: "background",
+          prop: "background",
+          group: "Visual",
+          desc: "Фон элемента (сокращённо).",
+          example: "background: linear-gradient(90deg,#4ade80,#06b6d4);",
+        },
+        {
+          id: "background-color",
+          prop: "background-color",
+          group: "Visual",
+          desc: "Цвет фона.",
+          example: "background-color: #fff;",
+        },
+        {
+          id: "background-image",
+          prop: "background-image",
+          group: "Visual",
+          desc: "Изображение фона.",
+          example: 'background-image: url("bg.jpg");',
+        },
+        {
+          id: "background-size",
+          prop: "background-size",
+          group: "Visual",
+          desc: "Размер фонового изображения.",
+          example: "background-size: cover;",
+        },
+        {
+          id: "background-position",
+          prop: "background-position",
+          group: "Visual",
+          desc: "Позиция фонового изображения.",
+          example: "background-position: center;",
+        },
+        {
+          id: "border",
+          prop: "border",
+          group: "Visual",
+          desc: "Граница элемента (сокращённо).",
+          example: "border: 1px solid rgba(0,0,0,0.1);",
+        },
+        {
+          id: "border-radius",
+          prop: "border-radius",
+          group: "Visual",
+          desc: "Скругление углов.",
+          example: "border-radius: 8px;",
+        },
+        {
+          id: "box-shadow",
+          prop: "box-shadow",
+          group: "Visual",
+          desc: "Тень элемента.",
+          example: "box-shadow: 0 8px 24px rgba(2,6,23,0.6);",
+        },
+        {
+          id: "opacity",
+          prop: "opacity",
+          group: "Visual",
+          desc: "Прозрачность элемента.",
+          example: "opacity: 0.8;",
+        },
+        {
+          id: "transition",
+          prop: "transition",
+          group: "Animation",
+          desc: "Свойство перехода для анимаций.",
+          example: "transition: all 0.3s ease;",
+        },
+        {
+          id: "transform",
+          prop: "transform",
+          group: "Animation",
+          desc: "Трансформации: translate, scale, rotate.",
+          example: "transform: translateY(4px) scale(1.02);",
+        },
+        {
+          id: "transform-origin",
+          prop: "transform-origin",
+          group: "Animation",
+          desc: "Точка происхождения трансформации.",
+          example: "transform-origin: center;",
+        },
+        {
+          id: "animation",
+          prop: "animation",
+          group: "Animation",
+          desc: "Быстрая запись для анимации (name duration timing-function).",
+          example: "animation: fadeIn 0.4s ease both;",
+        },
+        {
+          id: "filter",
+          prop: "filter",
+          group: "Visual",
+          desc: "Фильтры (blur, brightness, contrast).",
+          example: "filter: blur(4px) contrast(1.1);",
+        },
+        {
+          id: "cursor",
+          prop: "cursor",
+          group: "UX",
+          desc: "Вид курсора при наведении.",
+          example: "cursor: pointer;",
+        },
+        {
+          id: "visibility",
+          prop: "visibility",
+          group: "UX",
+          desc: "Видимость элемента (visible, hidden, collapse).",
+          example: "visibility: hidden;",
+        },
+        {
+          id: "user-select",
+          prop: "user-select",
+          group: "UX",
+          desc: "Можно ли выделять текст пользователю.",
+          example: "user-select: none;",
+        },
+        {
+          id: "pointer-events",
+          prop: "pointer-events",
+          group: "UX",
+          desc: "Обработка событий курсора на элементе.",
+          example: "pointer-events: none;",
+        },
+        {
+          id: "resize",
+          prop: "resize",
+          group: "UX",
+          desc: "Разрешение изменения размеров элемента пользователем.",
+          example: "resize: vertical;",
+        },
+        {
+          id: "outline",
+          prop: "outline",
+          group: "Visual",
+          desc: "Внешняя линия (обычно для фокуса).",
+          example: "outline: 2px solid #7dd3fc;",
+        },
+        {
+          id: "mix-blend-mode",
+          prop: "mix-blend-mode",
+          group: "Visual",
+          desc: "Как элемент смешивается с фоном.",
+          example: "mix-blend-mode: multiply;",
+        },
+        {
+          id: "backdrop-filter",
+          prop: "backdrop-filter",
+          group: "Visual",
+          desc: "Фильтры для заднего фона (glass effect).",
+          example: "backdrop-filter: blur(6px) saturate(120%);",
+        },
+        {
+          id: "columns",
+          prop: "columns",
+          group: "Typography",
+          desc: "Множественные колонки (multi-column layout).",
+          example: "columns: 2 200px;",
+        },
+        {
+          id: "column-gap",
+          prop: "column-gap",
+          group: "Typography",
+          desc: "Расстояние между колонками.",
+          example: "column-gap: 24px;",
+        },
+        {
+          id: "list-style",
+          prop: "list-style",
+          group: "Typography",
+          desc: "Стиль маркеров списка.",
+          example: "list-style: disc inside;",
+        },
+        {
+          id: "counter-reset",
+          prop: "counter-reset",
+          group: "Advanced",
+          desc: "Сброс счётчика для CSS counters.",
+          example: "counter-reset: section;",
+        },
+        {
+          id: "counter-increment",
+          prop: "counter-increment",
+          group: "Advanced",
+          desc: "Инкремент счётчика.",
+          example: "counter-increment: item 1;",
+        },
+        {
+          id: "clip-path",
+          prop: "clip-path",
+          group: "Visual",
+          desc: "Обрезка видимой области элемента.",
+          example: "clip-path: circle(50% at 50% 50%);",
+        },
+        {
+          id: "object-fit",
+          prop: "object-fit",
+          group: "Media",
+          desc: "Как медиа вписывается в контейнер (cover, contain).",
+          example: "object-fit: cover;",
+        },
+        {
+          id: "object-position",
+          prop: "object-position",
+          group: "Media",
+          desc: "Позиция медиа внутри контейнера.",
+          example: "object-position: center center;",
+        },
+        {
+          id: "will-change",
+          prop: "will-change",
+          group: "Performance",
+          desc: "Подсказывает браузеру о предстоящих изменениях.",
+          example: "will-change: transform, opacity;",
+        },
+        {
+          id: "transition-delay",
+          prop: "transition-delay",
+          group: "Animation",
+          desc: "Задержка перед началом transition.",
+          example: "transition-delay: 100ms;",
+        },
+        {
+          id: "transition-duration",
+          prop: "transition-duration",
+          group: "Animation",
+          desc: "Длительность transition.",
+          example: "transition-duration: 300ms;",
+        },
+        {
+          id: "transition-property",
+          prop: "transition-property",
+          group: "Animation",
+          desc: "Какие свойства анимировать.",
+          example: "transition-property: opacity, transform;",
+        },
+        {
+          id: "@media",
+          prop: "@media",
+          group: "Responsive",
+          desc: "Медиазапросы для адаптивной верстки.",
+          example: "@media (max-width: 768px) { .nav{display:none;} }",
+        },
+        {
+          id: "@supports",
+          prop: "@supports",
+          group: "Advanced",
+          desc: "Проверка поддержки свойства/функции в браузере.",
+          example: "@supports (display: grid) { .grid{display:grid;} }",
+        },
+        {
+          id: "--variable",
+          prop: "CSS Variables",
+          group: "Advanced",
+          desc: "Пользовательские свойства (переменные).",
+          example: ":root { --accent: #06b6d4; } .btn{color: var(--accent);}",
+        },
+      ];
+
+      const content = document.getElementById("content");
+      const toc = document.getElementById("toc");
+
+      function render(list) {
+        content.innerHTML = "";
+        toc.innerHTML = "";
+        const groups = {};
+        list.forEach((p) => {
+          groups[p.group] = groups[p.group] || [];
+          groups[p.group].push(p);
+        });
+        Object.keys(groups).forEach((group) => {
+          const hdr = document.createElement("div");
+          hdr.style.gridColumn = "1 / -1";
+          hdr.innerHTML = `<h3 style="margin:0 0 8px 0;color:var(--accent)">${group}</h3>`;
+          content.appendChild(hdr);
+          groups[group].forEach((p) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.id = "card-" + p.id;
+            card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div style="max-width:78%">
+                <div class="prop">${p.prop}</div>
+                <div class="desc">${p.desc}</div>
+                <div style="color:var(--muted);font-size:13px">Группа: ${
+                  p.group
+                }</div>
+              </div>
+              <div style="text-align:right">
+                <button class="copy btn" data-code='${escapeHtml(
+                  p.example
+                )}'>Копировать</button>
+              </div>
+            </div>
+            <div style="margin-top:10px"><pre><code>${escapeHtml(
+              p.example
+            )}</code></pre></div>
+          `;
+            content.appendChild(card);
+            const a = document.createElement("a");
+            a.href = "#card-" + p.id;
+            a.textContent = p.prop + " — " + p.desc.split(".")[0];
+            toc.appendChild(a);
+          });
+        });
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      render(PROPS);
+
+      const q = document.getElementById("q");
+      q.addEventListener("input", () => {
+        const v = q.value.trim().toLowerCase();
+        if (!v) {
+          render(PROPS);
+          return;
+        }
+        const filtered = PROPS.filter((p) =>
+          (p.prop + p.desc + p.group + p.example).toLowerCase().includes(v)
+        );
+        render(filtered);
+      });
+      document.getElementById("clear").addEventListener("click", () => {
+        q.value = "";
+        render(PROPS);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          const code = e.target.getAttribute("data-code");
+          navigator.clipboard
+            .writeText(code)
+            .then(() => {
+              e.target.textContent = "Скопировано";
+              setTimeout(() => (e.target.textContent = "Копировать"), 1200);
+            })
+            .catch(() => alert("Копирование не удалось"));
+        }
+      });
+      document
+        .getElementById("print")
+        .addEventListener("click", () => window.print());
+    </script>
+  </body>
+</html>

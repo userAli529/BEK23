@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Полный справочник HTML — Все теги с примерами</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #99a3b3;
+        --text: #e6eef6;
+        --accent: #6ee7b7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #071126, #071028);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: linear-gradient(180deg, #071631, #041022);
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .brand {
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .toc {
+        overflow: auto;
+        height: calc(100vh - 180px);
+        padding-right: 8px;
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        border-radius: 6px;
+        color: var(--muted);
+        text-decoration: none;
+        margin-bottom: 6px;
+      }
+      .toc a:hover {
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .main {
+        padding: 28px;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: var(--card);
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .tag {
+        font-weight: 700;
+        color: var(--accent);
+        font-size: 16px;
+      }
+      .desc {
+        margin: 8px 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      pre {
+        background: #071826;
+        color: #bfece0;
+        padding: 12px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 13px;
+      }
+      code {
+        font-family: Consolas, monospace;
+        font-size: 13px;
+      }
+      .examples {
+        margin-top: 10px;
+      }
+      .copy {
+        float: right;
+        background: transparent;
+        border: 0;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      footer.small {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 18px;
+      }
+      @media (max-width: 900px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          display: none;
+        }
+        .main {
+          padding: 16px;
+        }
+      }
+      /* accordion */
+      details {
+        margin-bottom: 12px;
+      }
+      summary {
+        cursor: pointer;
+        outline: none;
+        padding: 8px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.01);
+      }
+      .meta-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .badge {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 6px 8px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">HTML — Полный справочник</div>
+        <div class="search">
+          <input
+            id="q"
+            placeholder="Поиск тега или термина (напр. &lt;form&gt;)"
+            autocomplete="off"
+          />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+        <div class="toc" id="toc"></div>
+        <div
+          style="
+            position: absolute;
+            left: 20px;
+            bottom: 18px;
+            color: var(--muted);
+            font-size: 13px;
+          "
+        >
+          Interactive — examples & copy
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">Полное объяснение всех HTML-тегов</div>
+            <div class="desc" style="margin-top: 6px">
+              Интерактивный учебник: примеры, пояснения, копирование кода.
+            </div>
+          </div>
+          <div class="controls">
+            <button class="btn" id="print">Печать (PDF)</button>
+            <button class="btn" id="expand">Развернуть все</button>
+            <a class="btn" href="..//index.html">Home</a>
+          </div>
+        </div>
+
+        <section id="content" class="grid"></section>
+
+        <footer class="small">
+          Создано как учебный одностраничный справочник — содержит все теги HTML
+          (семантика, примеры, заметки).
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      // Список тегов и описаний (сокращённо, полные текстовые объяснения включены для ключевых групп)
+      const TAGS = [
+        {
+          id: "doctype",
+          tag: "<!DOCTYPE>",
+          group: "Корневые и метаданные",
+          desc: "Указывает браузеру, что документ — HTML5. Не тег, а инструкция парсеру.",
+          example: "<!DOCTYPE html>",
+        },
+        {
+          id: "html",
+          tag: "<html>",
+          group: "Корневые и метаданные",
+          desc: 'Корневой элемент, содержащий весь HTML-документ. Часто используется с lang="ru".',
+          example: '<html lang="ru">...</html>',
+        },
+        {
+          id: "head",
+          tag: "<head>",
+          group: "Корневые и метаданные",
+          desc: "Секция метаданных: SEO, кодировка, стили, ссылки, скрипты.",
+          example:
+            '<head>\n  <meta charset="utf-8">\n  <title>...</title>\n<\/head>',
+        },
+        {
+          id: "title",
+          tag: "<title>",
+          group: "Корневые и метаданные",
+          desc: "Название страницы (отображается на вкладке).",
+          example: "<title>Моя страница<\/title>",
+        },
+        {
+          id: "base",
+          tag: "<base>",
+          group: "Корневые и метаданные",
+          desc: "Устанавливает базовый URL для всех ссылок и ресурсов в документе.",
+          example: '<base href="https://site.example/">',
+        },
+        {
+          id: "link",
+          tag: "<link>",
+          group: "Корневые и метаданные",
+          desc: "Подключает внешние файлы: CSS, иконки, шрифты.",
+          example: '<link rel="stylesheet" href="styles.css">',
+        },
+        {
+          id: "meta",
+          tag: "<meta>",
+          group: "Корневые и метаданные",
+          desc: "Метаданные документа: описание, автор, кодировка, viewport.",
+          example:
+            '<meta name="viewport" content="width=device-width,initial-scale=1">',
+        },
+        {
+          id: "style",
+          tag: "<style>",
+          group: "Корневые и метаданные",
+          desc: "Встроенные CSS-стили внутри HTML.",
+          example: "<style>\n  body{font-family:Inter}\n<\/style>",
+        },
+        // Sections
+        {
+          id: "body",
+          tag: "<body>",
+          group: "Секционные элементы",
+          desc: "Содержит весь видимый контент страницы.",
+          example: "<body>...<\/body>",
+        },
+        {
+          id: "header",
+          tag: "<header>",
+          group: "Секционные элементы",
+          desc: "Шапка сайта или секции: логотип, меню, заголовок.",
+          example: "<header>\n  <h1>Заголовок<\/h1>\n<\/header>",
+        },
+        {
+          id: "footer",
+          tag: "<footer>",
+          group: "Секционные элементы",
+          desc: "Подвал: контакты, копирайт, ссылки.",
+          example: "<footer>© 2025<\/footer>",
+        },
+        {
+          id: "main",
+          tag: "<main>",
+          group: "Секционные элементы",
+          desc: "Основное уникальное содержание страницы.",
+          example: "<main>Основной контент<\/main>",
+        },
+        {
+          id: "nav",
+          tag: "<nav>",
+          group: "Секционные элементы",
+          desc: "Блок с навигацией: меню, ссылки на разделы.",
+          example: '<nav>\n  <a href="#">Главная<\/a>\n<\/nav>',
+        },
+        {
+          id: "section",
+          tag: "<section>",
+          group: "Секционные элементы",
+          desc: "Логическая секция контента: темы, разделы.",
+          example: "<section>Раздел сайта<\/section>",
+        },
+        {
+          id: "article",
+          tag: "<article>",
+          group: "Секционные элементы",
+          desc: "Самостоятельный фрагмент контента — статья, пост, карточка товара.",
+          example: "<article><h2>Пост</h2><p>Текст</p></article>",
+        },
+        {
+          id: "aside",
+          tag: "<aside>",
+          group: "Секционные элементы",
+          desc: "Боковая панель: реклама, ссылки, боковые блоки.",
+          example: "<aside>Боковая панель<\/aside>",
+        },
+        {
+          id: "h1",
+          tag: "<h1>…<h6>",
+          group: "Секционные элементы",
+          desc: "Заголовки разного уровня. h1 — главный, h6 — самый маленький.",
+          example: "<h1>Главный заголовок<\/h1>",
+        },
+        // Grouping
+        {
+          id: "p",
+          tag: "<p>",
+          group: "Группировка контента",
+          desc: "Абзац текста.",
+          example: "<p>Абзац текста<\/p>",
+        },
+        {
+          id: "hr",
+          tag: "<hr>",
+          group: "Группировка контента",
+          desc: "Горизонтальная линия. Используется для смыслового разделения.",
+          example: "<hr>",
+        },
+        {
+          id: "pre",
+          tag: "<pre>",
+          group: "Группировка контента",
+          desc: "Сохраняет пробелы, переносы, форматирование. Используется для кода.",
+          example: "<pre>  function test() {}<\/pre>",
+        },
+        {
+          id: "blockquote",
+          tag: "<blockquote>",
+          group: "Группировка контента",
+          desc: "Большая цитата с отступом.",
+          example: "<blockquote>Цитата<\/blockquote>",
+        },
+        {
+          id: "ol",
+          tag: "<ol>",
+          group: "Группировка контента",
+          desc: "Нумерованный список.",
+          example: "<ol><li>Первый<\/li><\/ol>",
+        },
+        {
+          id: "ul",
+          tag: "<ul>",
+          group: "Группировка контента",
+          desc: "Маркированный список.",
+          example: "<ul><li>Элемент<\/li><\/ul>",
+        },
+        {
+          id: "li",
+          tag: "<li>",
+          group: "Группировка контента",
+          desc: "Элемент списка.",
+          example: "<ul><li>Элемент<\/li><\/ul>",
+        },
+        {
+          id: "dl",
+          tag: "<dl>",
+          group: "Группировка контента",
+          desc: "Список определений (термин + описание).",
+          example: "<dl><dt>Термин<\/dt><dd>Описание<\/dd><\/dl>",
+        },
+        {
+          id: "dt",
+          tag: "<dt>",
+          group: "Группировка контента",
+          desc: "Термин.",
+          example: "<dt>Термин<\/dt>",
+        },
+        {
+          id: "dd",
+          tag: "<dd>",
+          group: "Группировка контента",
+          desc: "Описание термина.",
+          example: "<dd>Описание<\/dd>",
+        },
+        {
+          id: "figure",
+          tag: "<figure>",
+          group: "Группировка контента",
+          desc: "Самостоятельный объект: фото, диаграмма, схемы.",
+          example:
+            '<figure><img src="#" alt=""><figcaption>Подпись<\/figcaption><\/figure>',
+        },
+        {
+          id: "figcaption",
+          tag: "<figcaption>",
+          group: "Группировка контента",
+          desc: "Подпись к <figure>.",
+          example: "<figcaption>Подпись<\/figcaption>",
+        },
+        {
+          id: "div",
+          tag: "<div>",
+          group: "Группировка контента",
+          desc: "Блочный контейнер без семантики. Используется для структуры.",
+          example: '<div class="wrap">...<\/div>',
+        },
+        // Inline
+        {
+          id: "a",
+          tag: "<a>",
+          group: "Текстовые inline-элементы",
+          desc: "Ссылка на другие страницы или якоря.",
+          example: '<a href="https://example.com">Ссылка<\/a>',
+        },
+        {
+          id: "strong",
+          tag: "<strong>",
+          group: "Текстовые inline-элементы",
+          desc: "Важный текст (семантически важный).",
+          example: "<strong>Важно<\/strong>",
+        },
+        {
+          id: "em",
+          tag: "<em>",
+          group: "Текстовые inline-элементы",
+          desc: "Выделенный текст (семантическое ударение).",
+          example: "<em>Акцент<\/em>",
+        },
+        {
+          id: "small",
+          tag: "<small>",
+          group: "Текстовые inline-элементы",
+          desc: "Мелкий второстепенный текст (дисклеймеры).",
+          example: "<small>Мелкий текст<\/small>",
+        },
+        {
+          id: "s",
+          tag: "<s>",
+          group: "Текстовые inline-элементы",
+          desc: "Зачёркнутый текст (утратившая актуальность информация).",
+          example: "<s>Старое<\/s>",
+        },
+        {
+          id: "cite",
+          tag: "<cite>",
+          group: "Текстовые inline-элементы",
+          desc: "Название произведения: книга, фильм, статья.",
+          example: "<cite>Название<\/cite>",
+        },
+        {
+          id: "q",
+          tag: "<q>",
+          group: "Текстовые inline-элементы",
+          desc: "Короткая цитата в строку.",
+          example: "<q>Короткая цитата<\/q>",
+        },
+        {
+          id: "dfn",
+          tag: "<dfn>",
+          group: "Текстовые inline-элементы",
+          desc: "Определяемый термин (важно для словарей).",
+          example: "<dfn>Термин<\/dfn>",
+        },
+        {
+          id: "abbr",
+          tag: "<abbr>",
+          group: "Текстовые inline-элементы",
+          desc: "Аббревиатура, можно указать расшифровку.",
+          example: '<abbr title="HyperText Markup Language">HTML<\/abbr>',
+        },
+        {
+          id: "data",
+          tag: "<data>",
+          group: "Текстовые inline-элементы",
+          desc: "Машиночитаемое значение, связывает текст с данными.",
+          example: '<data value="42">42<\/data>',
+        },
+        {
+          id: "time",
+          tag: "<time>",
+          group: "Текстовые inline-элементы",
+          desc: "Дата или время (для машин и поисковых систем).",
+          example: '<time datetime="2025-12-13">13 дек 2025<\/time>',
+        },
+        {
+          id: "code",
+          tag: "<code>",
+          group: "Текстовые inline-элементы",
+          desc: "Отображение фрагментов кода.",
+          example: "<code>const x = 1;<\/code>",
+        },
+        {
+          id: "var",
+          tag: "<var>",
+          group: "Текстовые inline-элементы",
+          desc: "Переменная в математике/программировании.",
+          example: "<var>x<\/var>",
+        },
+        {
+          id: "samp",
+          tag: "<samp>",
+          group: "Текстовые inline-элементы",
+          desc: "Вывод программы или системы.",
+          example: "<samp>Output<\/samp>",
+        },
+        {
+          id: "kbd",
+          tag: "<kbd>",
+          group: "Текстовые inline-элементы",
+          desc: "Сочетания клавиш.",
+          example: "<kbd>Ctrl+C<\/kbd>",
+        },
+        {
+          id: "sub",
+          tag: "<sub>",
+          group: "Текстовые inline-элементы",
+          desc: "Нижний индекс.",
+          example: "H<sub>2</sub>O",
+        },
+        {
+          id: "sup",
+          tag: "<sup>",
+          group: "Текстовые inline-элементы",
+          desc: "Верхний индекс.",
+          example: "x<sup>2<\/sup>",
+        },
+        {
+          id: "i",
+          tag: "<i>",
+          group: "Текстовые inline-элементы",
+          desc: "Курсив (без семантики).",
+          example: "<i>Курсив<\/i>",
+        },
+        {
+          id: "b",
+          tag: "<b>",
+          group: "Текстовые inline-элементы",
+          desc: "Жирный текст (без семантики).",
+          example: "<b>Жирный<\/b>",
+        },
+        {
+          id: "u",
+          tag: "<u>",
+          group: "Текстовые inline-элементы",
+          desc: "Подчёркнутый текст.",
+          example: "<u>Подчеркнутый<\/u>",
+        },
+        {
+          id: "mark",
+          tag: "<mark>",
+          group: "Текстовые inline-элементы",
+          desc: "Выделяет текст как подсвеченный маркером.",
+          example: "<mark>Важно<\/mark>",
+        },
+        {
+          id: "ruby",
+          tag: "<ruby>",
+          group: "Текстовые inline-элементы",
+          desc: "Аннотации для иероглифов.",
+          example: "<ruby>漢<rt>かん<\/rt><\/ruby>",
+        },
+        {
+          id: "rb",
+          tag: "<rb>",
+          group: "Текстовые inline-элементы",
+          desc: "Базовый текст ruby.",
+          example: "<rb>漢<\/rb>",
+        },
+        {
+          id: "rt",
+          tag: "<rt>",
+          group: "Текстовые inline-элементы",
+          desc: "Произношение.",
+          example: "<rt>かん<\/rt>",
+        },
+        {
+          id: "rtc",
+          tag: "<rtc>",
+          group: "Текстовые inline-элементы",
+          desc: "Дополнительная надпись.",
+          example: "<rtc>Доп.<\/rtc>",
+        },
+        {
+          id: "rp",
+          tag: "<rp>",
+          group: "Текстовые inline-элементы",
+          desc: "Fallback для браузеров без ruby.",
+          example: "<rp>(<\/rp>",
+        },
+        {
+          id: "bdi",
+          tag: "<bdi>",
+          group: "Текстовые inline-элементы",
+          desc: "Изолирует текст для правильного направления письма.",
+          example: "<bdi>טקסט</bdi>",
+        },
+        {
+          id: "bdo",
+          tag: "<bdo>",
+          group: "Текстовые inline-элементы",
+          desc: "Принудительно задаёт направление текста.",
+          example: '<bdo dir="rtl">...<\/bdo>',
+        },
+        {
+          id: "span",
+          tag: "<span>",
+          group: "Текстовые inline-элементы",
+          desc: "Строчный контейнер без семантики.",
+          example: '<span class="note">...</span>',
+        },
+        {
+          id: "wbr",
+          tag: "<wbr>",
+          group: "Текстовые inline-элементы",
+          desc: "Разрешает перенос строки.",
+          example: "LongWord<wbr>End",
+        },
+        // Embedded
+        {
+          id: "img",
+          tag: "<img>",
+          group: "Встраиваемый контент",
+          desc: "Изображение.",
+          example: '<img src="/img.jpg" alt="Описание">',
+        },
+        {
+          id: "audio",
+          tag: "<audio>",
+          group: "Встраиваемый контент",
+          desc: "Аудиоплеер.",
+          example: '<audio controls src="song.mp3"></audio>',
+        },
+        {
+          id: "video",
+          tag: "<video>",
+          group: "Встраиваемый контент",
+          desc: "Видеоплеер.",
+          example: '<video controls src="movie.mp4"></video>',
+        },
+        {
+          id: "source",
+          tag: "<source>",
+          group: "Встраиваемый контент",
+          desc: "Источник файлов для <audio> и <video>.",
+          example: '<source src="video.mp4" type="video/mp4">',
+        },
+        {
+          id: "track",
+          tag: "<track>",
+          group: "Встраиваемый контент",
+          desc: "Субтитры.",
+          example: '<track kind="subtitles" srclang="ru" src="subs.vtt">',
+        },
+        {
+          id: "iframe",
+          tag: "<iframe>",
+          group: "Встраиваемый контент",
+          desc: "Встраивание другой веб-страницы.",
+          example: '<iframe src="https://example.com"></iframe>',
+        },
+        {
+          id: "embed",
+          tag: "<embed>",
+          group: "Встраиваемый контент",
+          desc: "Встраивание сторонних ресурсов (PDF и др.).",
+          example: '<embed src="file.pdf" type="application/pdf">',
+        },
+        {
+          id: "object",
+          tag: "<object>",
+          group: "Встраиваемый контент",
+          desc: "Встраивание мультимедиа (устаревшее).",
+          example: '<object data="file.swf"></object>',
+        },
+        {
+          id: "param",
+          tag: "<param>",
+          group: "Встраиваемый контент",
+          desc: "Параметры для <object>.",
+          example: '<param name="autoplay" value="true">',
+        },
+        {
+          id: "picture",
+          tag: "<picture>",
+          group: "Встраиваемый контент",
+          desc: "Адаптивные изображения.",
+          example:
+            '<picture><source media="(min-width:600px)" srcset="big.jpg"><img src="small.jpg" alt=""></picture>',
+        },
+        {
+          id: "map",
+          tag: "<map>",
+          group: "Встраиваемый контент",
+          desc: "Карта изображений.",
+          example: '<map name="map"><area coords="..." href="#"><\/map>',
+        },
+        {
+          id: "area",
+          tag: "<area>",
+          group: "Встраиваемый контент",
+          desc: "Область клика на изображении.",
+          example: '<area shape="rect" coords="0,0,100,100" href="#">',
+        },
+        {
+          id: "canvas",
+          tag: "<canvas>",
+          group: "Встраиваемый контент",
+          desc: "Холст для рисования JavaScript.",
+          example: '<canvas width="300" height="150"></canvas>',
+        },
+        {
+          id: "svg",
+          tag: "<svg>",
+          group: "Встраиваемый контент",
+          desc: "Векторная графика.",
+          example:
+            '<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>',
+        },
+        {
+          id: "math",
+          tag: "<math>",
+          group: "Встраиваемый контент",
+          desc: "Математические формулы (MathML).",
+          example: "<math><mi>x<\/mi><mo>=<\/mo><mn>1<\/mn><\/math>",
+        },
+        // Scripts
+        {
+          id: "script",
+          tag: "<script>",
+          group: "Скрипты",
+          desc: "Вставка JavaScript.",
+          example: '<script>console.log("hi")<\/script>',
+        },
+        {
+          id: "noscript",
+          tag: "<noscript>",
+          group: "Скрипты",
+          desc: "Контент, который показывается, если JS отключён.",
+          example: "<noscript>Включите JS<\/noscript>",
+        },
+        // Editing
+        {
+          id: "del",
+          tag: "<del>",
+          group: "Элементы редактирования",
+          desc: "Удалённый текст.",
+          example: "<del>Удалено<\/del>",
+        },
+        {
+          id: "ins",
+          tag: "<ins>",
+          group: "Элементы редактирования",
+          desc: "Добавленный текст.",
+          example: "<ins>Добавлено<\/ins>",
+        },
+        // Tables
+        {
+          id: "table",
+          tag: "<table>",
+          group: "Таблицы",
+          desc: "Таблица.",
+          example: "<table><tr><td>1<\/td><\/tr><\/table>",
+        },
+        {
+          id: "caption",
+          tag: "<caption>",
+          group: "Таблицы",
+          desc: "Название таблицы.",
+          example: "<caption>Таблица<\/caption>",
+        },
+        {
+          id: "colgroup",
+          tag: "<colgroup>",
+          group: "Таблицы",
+          desc: "Группа столбцов.",
+          example: '<colgroup><col span="2"><\/colgroup>',
+        },
+        {
+          id: "col",
+          tag: "<col>",
+          group: "Таблицы",
+          desc: "Настройки столбцов.",
+          example: '<col style="width:50%">',
+        },
+        {
+          id: "thead",
+          tag: "<thead>",
+          group: "Таблицы",
+          desc: "Шапка таблицы.",
+          example: "<thead><tr><th>Заг<\/th><\/tr><\/thead>",
+        },
+        {
+          id: "tbody",
+          tag: "<tbody>",
+          group: "Таблицы",
+          desc: "Тело таблицы.",
+          example: "<tbody><tr><td>...<\/td><\/tr><\/tbody>",
+        },
+        {
+          id: "tfoot",
+          tag: "<tfoot>",
+          group: "Таблицы",
+          desc: "Подвал таблицы.",
+          example: "<tfoot><tr><td>Итого<\/td><\/tr><\/tfoot>",
+        },
+        {
+          id: "tr",
+          tag: "<tr>",
+          group: "Таблицы",
+          desc: "Строка таблицы.",
+          example: "<tr><td>...<\/td><\/tr>",
+        },
+        {
+          id: "th",
+          tag: "<th>",
+          group: "Таблицы",
+          desc: "Ячейка заголовка.",
+          example: "<th>Колонка<\/th>",
+        },
+        {
+          id: "td",
+          tag: "<td>",
+          group: "Таблицы",
+          desc: "Обычная ячейка.",
+          example: "<td>Значение<\/td>",
+        },
+        // Forms
+        {
+          id: "form",
+          tag: "<form>",
+          group: "Формы",
+          desc: "Форма отправки данных.",
+          example: '<form action="/" method="post"></form>',
+        },
+        {
+          id: "label",
+          tag: "<label>",
+          group: "Формы",
+          desc: "Метка для элемента формы.",
+          example: '<label for="email">Email<\/label>',
+        },
+        {
+          id: "input",
+          tag: "<input>",
+          group: "Формы",
+          desc: "Поле ввода: текст, email, пароль, дата и т.д.",
+          example: '<input type="text" name="name">',
+        },
+        {
+          id: "textarea",
+          tag: "<textarea>",
+          group: "Формы",
+          desc: "Многострочное поле ввода.",
+          example: '<textarea rows="4"></textarea>',
+        },
+        {
+          id: "button",
+          tag: "<button>",
+          group: "Формы",
+          desc: "Кнопка.",
+          example: '<button type="submit">Отправить<\/button>',
+        },
+        {
+          id: "select",
+          tag: "<select>",
+          group: "Формы",
+          desc: "Выпадающий список.",
+          example: "<select><option>1<\/option><\/select>",
+        },
+        {
+          id: "datalist",
+          tag: "<datalist>",
+          group: "Формы",
+          desc: "Список вариантов (autocomplete).",
+          example: '<datalist id="list"><option value="1"><\/datalist>',
+        },
+        {
+          id: "optgroup",
+          tag: "<optgroup>",
+          group: "Формы",
+          desc: "Группы опций.",
+          example: '<optgroup label="Гр"><option>1<\/option><\/optgroup>',
+        },
+        {
+          id: "option",
+          tag: "<option>",
+          group: "Формы",
+          desc: "Опция списка.",
+          example: '<option value="1">Один<\/option>',
+        },
+        {
+          id: "fieldset",
+          tag: "<fieldset>",
+          group: "Формы",
+          desc: "Группа элементов формы.",
+          example: "<fieldset><legend>Гр<\/legend><\/fieldset>",
+        },
+        {
+          id: "legend",
+          tag: "<legend>",
+          group: "Формы",
+          desc: "Название группы.",
+          example: "<legend>Группа<\/legend>",
+        },
+        {
+          id: "meter",
+          tag: "<meter>",
+          group: "Формы",
+          desc: "Графическое значение: уровень батареи, прогресс.",
+          example: '<meter value="0.5">50%<\/meter>',
+        },
+        {
+          id: "progress",
+          tag: "<progress>",
+          group: "Формы",
+          desc: "Индикатор выполнения.",
+          example: '<progress value="30" max="100">30%<\/progress>',
+        },
+        {
+          id: "output",
+          tag: "<output>",
+          group: "Формы",
+          desc: "Результат вычислений.",
+          example: '<output name="result">42<\/output>',
+        },
+        // Interactive
+        {
+          id: "details",
+          tag: "<details>",
+          group: "Интерактивные элементы",
+          desc: "Скрывающийся блок.",
+          example:
+            "<details><summary>Свернуть/развернуть<\/summary><p>Контент<\/p><\/details>",
+        },
+        {
+          id: "summary",
+          tag: "<summary>",
+          group: "Интерактивные элементы",
+          desc: "Заголовок блока <details>.",
+          example: "<summary>Заголовок<\/summary>",
+        },
+        {
+          id: "dialog",
+          tag: "<dialog>",
+          group: "Интерактивные элементы",
+          desc: "Модальное окно (диалог).",
+          example: "<dialog open>Диалог<\/dialog>",
+        },
+        // Web components
+        {
+          id: "template",
+          tag: "<template>",
+          group: "Web Components",
+          desc: "Шаблон, невидимый до вставки JS.",
+          example: "<template><p>Шаблон<\/p><\/template>",
+        },
+        {
+          id: "slot",
+          tag: "<slot>",
+          group: "Web Components",
+          desc: "Место для пользовательского контента в Web Component.",
+          example: '<slot name="content"><\/slot>',
+        },
+      ];
+
+      // Построение UI
+      const content = document.getElementById("content");
+      const toc = document.getElementById("toc");
+
+      function render(tags) {
+        content.innerHTML = "";
+        toc.innerHTML = "";
+        const groups = {};
+        tags.forEach((t) => {
+          groups[t.group] = groups[t.group] || [];
+          groups[t.group].push(t);
+        });
+        Object.keys(groups).forEach((group) => {
+          const groupHeader = document.createElement("div");
+          groupHeader.style.gridColumn = "1 / -1";
+          groupHeader.innerHTML = `<h3 style="margin:0 0 8px 0;color:var(--accent)">${group}</h3>`;
+          content.appendChild(groupHeader);
+          const link = document.createElement("div");
+          link.innerHTML = `<strong style="color:var(--accent)">${group}</strong>`;
+          groups[group].forEach((t) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.id = "card-" + t.id;
+            card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div class="tag">${t.tag}</div>
+                <div class="desc">${t.desc}</div>
+                <div class="meta-list"><div class="badge">Группа: ${
+                  t.group
+                }</div><div class="badge">Синтаксис</div></div>
+              </div>
+              <div style="margin-left:12px;text-align:right">
+                <button class="copy btn" data-code='${escapeHtml(
+                  t.example
+                )}' title="Скопировать пример">Копировать</button>
+              </div>
+            </div>
+            <div class="examples">
+              <pre><code>${escapeHtml(t.example)}</code></pre>
+            </div>
+          `;
+            content.appendChild(card);
+
+            // TOC link
+            const a = document.createElement("a");
+            a.href = "#card-" + t.id;
+            a.textContent = t.tag + " — " + t.desc.split(".")[0];
+            toc.appendChild(a);
+          });
+        });
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      render(TAGS);
+
+      // search
+      const q = document.getElementById("q");
+      q.addEventListener("input", () => {
+        const v = q.value.trim().toLowerCase();
+        if (!v) {
+          render(TAGS);
+          return;
+        }
+        const filtered = TAGS.filter((t) =>
+          (t.tag + t.desc + t.group + t.example).toLowerCase().includes(v)
+        );
+        render(filtered);
+      });
+      document.getElementById("clear").addEventListener("click", () => {
+        q.value = "";
+        render(TAGS);
+      });
+
+      // copy
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          const code = e.target.getAttribute("data-code");
+          navigator.clipboard
+            .writeText(code)
+            .then(() => {
+              e.target.textContent = "Скопировано";
+              setTimeout(() => (e.target.textContent = "Копировать"), 1200);
+            })
+            .catch(() => {
+              alert("Копирование не удалось");
+            });
+        }
+      });
+
+      // print
+      document
+        .getElementById("print")
+        .addEventListener("click", () => window.print());
+
+      // expand all not needed but simple
+      document.getElementById("expand").addEventListener("click", () => {
+        document.querySelectorAll("details").forEach((d) => (d.open = true));
+      });
+
+      // enable hash navigation
+      window.addEventListener("hashchange", () => {
+        const id = location.hash.slice(1);
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    </script>
+  </body>
+</html>

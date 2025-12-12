@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>JS Теория — Часть 3: Асинхронность, Event Loop, Promise</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #99a3b3;
+        --text: #e6eef6;
+        --accent: #6ee7b7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: linear-gradient(180deg, #071126, #071028);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: linear-gradient(180deg, #071631, #041022);
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .brand {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .toc {
+        overflow-y: auto;
+        height: calc(100vh - 160px);
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        margin-bottom: 6px;
+        border-radius: 6px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .toc a:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+      }
+      .main {
+        padding: 26px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: var(--card);
+        padding: 18px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .tag {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .desc {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      pre {
+        margin-top: 10px;
+        background: #071826;
+        color: #bfece0;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+      .copy {
+        float: right;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">JS — Часть 3: Асинхронность</div>
+
+        <div class="search">
+          <input id="q" placeholder="Поиск темы…" autocomplete="off" />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+
+        <div class="toc" id="toc"></div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">
+              Глубокая теория: Event Loop, Promises, Async/Await
+            </div>
+            <div class="desc">Механика движка, очереди задач, микротаски.</div>
+          </div>
+          <button class="btn" id="print">Печать</button>
+          <a class="btn" href="mdule-JS2.html">2-Часть</a>
+          <a class="btn" href="mdule-JS4.html">4-Часть</a>
+        </div>
+
+        <section id="content" class="grid"></section>
+      </main>
+    </div>
+
+    <script>
+      const TOPICS = [
+        {
+          id: "why-async",
+          term: "Почему JavaScript асинхронный",
+          group: "Основы",
+          desc: "JS — однопоточный язык. Чтобы не блокировать поток при запросах, таймерах, API, применяется механизм Event Loop.",
+          example: `console.log("JS однопоточный");`,
+        },
+        {
+          id: "event-loop-theory",
+          term: "Механизм Event Loop — теория",
+          group: "Event Loop",
+          desc: "Call Stack — стек вызовов. Microtask Queue — Promises. Macrotask Queue — таймеры, события. Microtasks всегда выполняются раньше.",
+          example: `// Порядок: Stack -> Microtasks -> Macrotasks`,
+        },
+        {
+          id: "micro-macro",
+          term: "Microtasks vs Macrotasks",
+          group: "Event Loop",
+          desc: "Microtasks: Promise.then, async/await. Macrotasks: setTimeout, setInterval, DOM-события, I/O.",
+          example: `Promise.resolve().then(()=>...)
+setTimeout(()=>...)`,
+        },
+        {
+          id: "event-loop-demo",
+          term: "Демонстрация Event Loop",
+          group: "Event Loop",
+          desc: "Promise.then выполняется раньше setTimeout, даже с нулевой задержкой.",
+          example: `console.log("start");
+
+setTimeout(()=>console.log("timeout"),0);
+
+Promise.resolve().then(()=>console.log("promise"));
+
+console.log("end");
+
+// start
+// end
+// promise
+// timeout`,
+        },
+        {
+          id: "promise-theory",
+          term: "Promise — теория",
+          group: "Promises",
+          desc: "Promise — объект для работы с асинхронностью. Состояния: pending, fulfilled, rejected.",
+          example: `const p = new Promise((resolve,reject)=>{
+  setTimeout(()=>resolve("Готово!"),1000);
+});`,
+        },
+        {
+          id: "promise-handling",
+          term: "Ловля результата Promise",
+          group: "Promises",
+          desc: "then — успешный результат, catch — ошибки, finally — завершение в любом случае.",
+          example: `p.then(r => console.log(r))
+ .catch(e => console.error(e))
+ .finally(()=>console.log("done"));`,
+        },
+        {
+          id: "promise-chain",
+          term: "Promise chaining (цепочка)",
+          group: "Promises",
+          desc: "Цепочки then позволяют обрабатывать данные как pipeline.",
+          example: `fetch("/api")
+ .then(r => r.json())
+ .then(data => process(data))
+ .catch(err => console.error(err));`,
+        },
+        {
+          id: "promise-combinators",
+          term: "Promise.all / race / allSettled / any",
+          group: "Promises",
+          desc: "Комбинаторы позволяют выполнять множество промисов параллельно.",
+          example: `Promise.all([p1,p2,p3]);
+Promise.race([p1,p2]);
+Promise.allSettled([p1,p2]);
+Promise.any([p1,p2]);`,
+        },
+        {
+          id: "async-await",
+          term: "async / await — сахар над Promise",
+          group: "Async",
+          desc: "async возвращает Promise. await ждёт Promise, не блокируя поток.",
+          example: `async function load(){
+  const r = await fetch("/user");
+  return await r.json();
+}`,
+        },
+        {
+          id: "async-errors",
+          term: "Ошибки в async/await",
+          group: "Async",
+          desc: "try/catch перехватывает ошибки внутри await.",
+          example: `async function load(){
+  try {
+    const r = await fetch("/bad-url");
+  } catch(e){
+    console.log("Ошибка:", e);
+  }
+}`,
+        },
+        {
+          id: "async-microtasks",
+          term: "async/await → это microtasks",
+          group: "Async",
+          desc: "await создаёт microtask. async-функции работают поверх промисов.",
+          example: `async function test(){
+  return "hi";
+}
+
+test().then(console.log);`,
+        },
+        {
+          id: "timers",
+          term: "Таймеры — теория",
+          group: "Timers",
+          desc: "setTimeout(fn,0) не выполняется сразу — это macrotask. Сначала выполняется стек и все microtasks.",
+          example: `setTimeout(()=>console.log("A"),0);
+console.log("B");`,
+        },
+        {
+          id: "fetch-api",
+          term: "fetch — современный API",
+          group: "Network",
+          desc: "fetch никогда не кидает ошибку при 404 — только при отсутствии сети.",
+          example: `fetch("/api/data")
+ .then(r=>r.json())
+ .then(d=>console.log(d));`,
+        },
+        {
+          id: "fetch-await",
+          term: "async/await + fetch",
+          group: "Network",
+          desc: "Проверять r.ok — обязательно.",
+          example: `async function load(){
+  const r = await fetch("/api");
+  if(!r.ok) throw new Error(r.status);
+  return await r.json();
+}`,
+        },
+        {
+          id: "xhr",
+          term: "XMLHttpRequest",
+          group: "Network",
+          desc: "Старый API, используется редко, но знать полезно.",
+          example: `const x = new XMLHttpRequest();
+x.open("GET","/api");
+x.onload = () => console.log(x.response);
+x.send();`,
+        },
+        {
+          id: "websocket",
+          term: "WebSocket — двусторонняя связь",
+          group: "Network",
+          desc: "Сокеты позволяют получать данные в реальном времени.",
+          example: `const ws = new WebSocket("wss://server.com");
+ws.onmessage = e => console.log(e.data);
+ws.send("hi");`,
+        },
+        {
+          id: "events",
+          term: "События: EventTarget API",
+          group: "Events",
+          desc: "addEventListener, removeEventListener, dispatchEvent.",
+          example: `document.addEventListener("click",()=>console.log("click"));`,
+        },
+        {
+          id: "throw-errors",
+          term: "Ошибки и исключения",
+          group: "Errors",
+          desc: "throw new Error(), try/catch.",
+          example: `try {
+  throw new Error("Ошибка!");
+} catch(e){
+  console.log(e.message);
+}`,
+        },
+        {
+          id: "await-loop",
+          term: "await внутри цикла — ловушка",
+          group: "Async",
+          desc: "Цикл с await блокирует последовательность. Лучше использовать Promise.all.",
+          example: `await Promise.all(list.map(url => fetch(url)));`,
+        },
+      ];
+
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function render(list) {
+        const content = document.getElementById("content");
+        const toc = document.getElementById("toc");
+        content.innerHTML = "";
+        toc.innerHTML = "";
+
+        list.forEach((t) => {
+          const link = document.createElement("a");
+          link.href = "#card-" + t.id;
+          link.textContent = t.term;
+          toc.appendChild(link);
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.id = "card-" + t.id;
+
+          card.innerHTML = `
+            <div class="tag">${t.term}</div>
+            <div class="desc">${t.desc}</div>
+            <button class="copy" data-code="${escapeHtml(
+              t.example
+            )}">копировать</button>
+            <pre><code>${escapeHtml(t.example)}</code></pre>
+          `;
+
+          content.appendChild(card);
+        });
+      }
+
+      render(TOPICS);
+
+      q.oninput = () => {
+        const v = q.value.toLowerCase();
+        render(
+          TOPICS.filter((t) => (t.term + t.desc).toLowerCase().includes(v))
+        );
+      };
+
+      clear.onclick = () => {
+        q.value = "";
+        render(TOPICS);
+      };
+      print.onclick = () => window.print();
+
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          navigator.clipboard.writeText(e.target.dataset.code);
+          e.target.textContent = "✓";
+          setTimeout(() => (e.target.textContent = "копировать"), 800);
+        }
+      });
+    </script>
+  </body>
+</html>

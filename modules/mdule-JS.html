@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Глубокая теория JavaScript — Часть 1</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #99a3b3;
+        --text: #e6eef6;
+        --accent: #6ee7b7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Segoe UI, Arial, sans-serif;
+        background: linear-gradient(180deg, #071126, #071028);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: linear-gradient(180deg, #071631, #041022);
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .brand {
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+      }
+      .toc {
+        overflow-y: auto;
+        height: calc(100vh - 180px);
+        padding-right: 6px;
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .toc a:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .main {
+        padding: 28px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: var(--card);
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      }
+      .tag {
+        font-size: 16px;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .desc {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      pre {
+        margin-top: 10px;
+        background: #071826;
+        padding: 12px;
+        color: #bfece0;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+      .copy {
+        float: right;
+        cursor: pointer;
+        border: 0;
+        color: var(--muted);
+        background: transparent;
+      }
+      footer.small {
+        margin-top: 20px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">JS — Глубокая Теория (Часть 1)</div>
+
+        <div class="search">
+          <input id="q" placeholder="Поиск темы…" autocomplete="off" />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+
+        <div class="toc" id="toc"></div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">Полное объяснение фундаментальных тем JS</div>
+            <div class="desc">
+              Глубокая теория, внутренняя механика, примеры.
+            </div>
+          </div>
+          <div class="controls">
+            <button class="btn" id="print">Печать</button>
+            <a class="btn" href="mdule-JS2.html">2-Часть</a>
+            <a class="btn" href="..//index.html">Home</a>
+          </div>
+        </div>
+
+        <section id="content" class="grid"></section>
+
+        <footer class="small">
+          Часть 1 — основы механики JavaScript. Ориентировано на реальное
+          понимание движка.
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      const TOPICS = [
+        {
+          id: "js-definition",
+          term: "Что такое JavaScript на самом деле",
+          group: "Основы языка",
+          desc: "JavaScript — однопоточный, динамически типизированный, интерпретируемый язык. Асинхронность создаётся Event Loop, а не потоками.",
+          example: "console.log('JS работает в одном потоке');",
+        },
+        {
+          id: "single-thread",
+          term: "Однопоточность и Event Loop",
+          group: "Основы языка",
+          desc: "JS выполняет код через Call Stack. Асинхронные операции попадают в очереди задач, которые Event Loop отправляет в стек после освобождения.",
+          example: `console.log('A');
+setTimeout(() => console.log('B'), 0);
+console.log('C');`,
+        },
+        {
+          id: "dynamic-typing",
+          term: "Динамическая типизация",
+          group: "Типы данных",
+          desc: "Тип переменной определяется значением. Переменная может менять тип в любой момент. Это даёт гибкость, но требует аккуратности.",
+          example: `let x = 10;
+x = "text"; // тип изменился`,
+        },
+        {
+          id: "variables",
+          term: "Переменные: var, let, const",
+          group: "Переменные",
+          desc: "var имеет область функции и поднимается (undefined). let/const имеют блочную область и находятся в TDZ до инициализации.",
+          example: `console.log(a); // undefined
+var a = 5;
+
+console.log(b); // ReferenceError
+let b = 5;`,
+        },
+        {
+          id: "hoisting",
+          term: "Hoisting — подъем переменных и функций",
+          group: "Переменные",
+          desc: "JS проходит код в две фазы: создание и выполнение. var → undefined. let/const → TDZ. Функции поднимаются полностью.",
+          example: `hi(); // работает
+function hi() { console.log("hello"); }`,
+        },
+        {
+          id: "primitives",
+          term: "Примитивы и неизменяемость",
+          group: "Типы данных",
+          desc: "Примитивы хранятся по значению и неизменяемы. Любая операция создаёт новое значение.",
+          example: `let s = "hi";
+s[0] = "H"; // игнорируется`,
+        },
+        {
+          id: "objects",
+          term: "Объекты — изменяемые структуры",
+          group: "Типы данных",
+          desc: "Объекты хранятся по ссылке. Можно менять свойства даже у const-переменной.",
+          example: `const user = { name: "Dio" };
+user.name = "Beksultan"; // допустимо`,
+        },
+        {
+          id: "null-object",
+          term: "Почему typeof null === 'object'",
+          group: "Типы данных",
+          desc: "Историческая ошибка в спецификации. Указатель null имел нулевой типовой бит — тот же, что и object.",
+          example: "console.log(typeof null); // object",
+        },
+        {
+          id: "operators-eq",
+          term: "== и === — глубокая разница",
+          group: "Операторы",
+          desc: "== делает опасное приведение типов. === сравнивает строго. Профессионалы всегда используют ===.",
+          example: `0 == false  // true
+0 === false // false`,
+        },
+        {
+          id: "logical-and",
+          term: "Логический оператор && возвращает значение",
+          group: "Операторы",
+          desc: "&& возвращает не boolean, а первый falsy или последний truthy.",
+          example: `5 && 7 // 7
+0 && 7 // 0`,
+        },
+        {
+          id: "truthy-falsy",
+          term: "Truthy / Falsy — фундамент условия",
+          group: "Условия",
+          desc: "Falsy: 0, '', null, undefined, false, NaN. Всё остальное truthy. Важно для сокращённых проверок.",
+          example: `if ("") console.log("нет");
+if ("hello") console.log("да");`,
+        },
+        {
+          id: "loops",
+          term: "Циклы: for, while, for…of, for…in",
+          group: "Циклы",
+          desc: "for…of работает с итерируемыми объектами. for…in перебирает ключи объекта — нежелателен для массивов.",
+          example: `for (let i of [1,2,3]) console.log(i);`,
+        },
+        {
+          id: "functions",
+          term: "Функции и скрытое свойство [[Environment]]",
+          group: "Функции",
+          desc: "Функция хранит ссылку на лексическую область, что создаёт механизм замыкания.",
+          example: `function create() {
+  let x = 10;
+  return () => x;
+}`,
+        },
+        {
+          id: "arrow-functions",
+          term: "Стрелочные функции: нет this и arguments",
+          group: "Функции",
+          desc: "Стрелки берут this из внешней области. Нельзя использовать как метод объекта.",
+          example: `const obj = {
+  n: 10,
+  hi: () => console.log(this.n) // undefined
+};`,
+        },
+        {
+          id: "closures",
+          term: "Замыкания — механизм памяти",
+          group: "Функции",
+          desc: "Функция запоминает переменные внешней области даже после завершения внешней функции.",
+          example: `function counter(){
+  let x = 0;
+  return () => ++x;
+}`,
+        },
+        {
+          id: "this",
+          term: "this — определяется моментом вызова",
+          group: "Контекст",
+          desc: "this зависит от того, как вызвали функцию: метод, обычный вызов, bind/call/apply, стрелка.",
+          example: `obj.hi();   // this = obj
+hi();       // this = window`,
+        },
+      ];
+
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function render(list) {
+        const content = document.getElementById("content");
+        const toc = document.getElementById("toc");
+        content.innerHTML = "";
+        toc.innerHTML = "";
+
+        list.forEach((t) => {
+          // toc
+          const link = document.createElement("a");
+          link.href = "#card-" + t.id;
+          link.textContent = t.term;
+          toc.appendChild(link);
+
+          // card
+          const card = document.createElement("div");
+          card.className = "card";
+          card.id = "card-" + t.id;
+
+          card.innerHTML = `
+            <div class="tag">${t.term}</div>
+            <div class="desc">${t.desc}</div>
+
+            <button class="copy" data-code="${escapeHtml(
+              t.example
+            )}">копировать</button>
+
+            <pre><code>${escapeHtml(t.example)}</code></pre>
+          `;
+          content.appendChild(card);
+        });
+      }
+
+      render(TOPICS);
+
+      document.getElementById("q").addEventListener("input", (e) => {
+        const v = e.target.value.toLowerCase();
+        const filtered = TOPICS.filter((t) =>
+          (t.term + t.desc + t.group).toLowerCase().includes(v)
+        );
+        render(filtered);
+      });
+
+      document.getElementById("clear").onclick = () => {
+        q.value = "";
+        render(TOPICS);
+      };
+
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          navigator.clipboard.writeText(e.target.dataset.code);
+          e.target.textContent = "✓";
+          setTimeout(() => (e.target.textContent = "копировать"), 800);
+        }
+      });
+
+      document.getElementById("print").onclick = () => window.print();
+    </script>
+  </body>
+</html>

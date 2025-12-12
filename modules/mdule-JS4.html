@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>JS Теория — Часть 4: Продвинутый JavaScript</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #99a3b3;
+        --text: #e6eef6;
+        --accent: #6ee7b7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: linear-gradient(180deg, #071126, #071028);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: linear-gradient(180deg, #071631, #041022);
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .brand {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .toc {
+        overflow-y: auto;
+        height: calc(100vh - 160px);
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        margin-bottom: 6px;
+        border-radius: 6px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .toc a:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+      }
+      .main {
+        padding: 26px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: var(--card);
+        padding: 18px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .tag {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .desc {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      pre {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #071826;
+        color: #bfece0;
+        overflow-x: auto;
+      }
+      .copy {
+        float: right;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">JS — Часть 4: Продвинутый уровень</div>
+
+        <div class="search">
+          <input id="q" placeholder="Поиск…" autocomplete="off" />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+
+        <div class="toc" id="toc"></div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">
+              Продвинутый JavaScript: Symbol, Proxy, GC, Patterns
+            </div>
+            <div class="desc">
+              Глубокие внутренности движка, архитектура и оптимизация.
+            </div>
+          </div>
+          <button class="btn" id="print">Печать</button>
+          <a class="btn" href="mdule-JS3.html">3-Часть</a>
+          <a class="btn" href="mdule-JS5.html">5-Часть</a>
+        </div>
+
+        <section id="content" class="grid"></section>
+      </main>
+    </div>
+
+    <script>
+      // ----------- TOPICS DATA -----------
+
+      const TOPICS = [
+        {
+          id: "symbol",
+          term: "Symbol — уникальный примитив",
+          group: "Symbols",
+          desc: "Symbol — уникальный идентификатор, используемый для скрытых свойств и системных операций.",
+          example: `const id = Symbol("id");
+const user = { name:"Dio", [id]:123 };`,
+        },
+        {
+          id: "well-known-symbols",
+          term: "Well-known symbols — магия JS",
+          group: "Symbols",
+          desc: "Системные символы управляют поведением объектов: iteration, toPrimitive, instanceof, toStringTag.",
+          example: `const obj = {
+  data: [1,2,3],
+  [Symbol.iterator]() {
+    let i = 0;
+    return {
+      next: () => ({
+        value: this.data[i++],
+        done: i > this.data.length
+      })
+    };
+  }
+};
+
+for (const x of obj) console.log(x);`,
+        },
+        {
+          id: "iterators",
+          term: "Итераторы — глубокая механика",
+          group: "Iteration",
+          desc: "Итератор — объект с next(), возвращающим {value, done}. Итерируемые: массивы, строки, Set, Map, генераторы.",
+          example: `const it = [10,20,30][Symbol.iterator]();
+it.next();`,
+        },
+        {
+          id: "generators",
+          term: "Генераторы — функции, которые можно ставить на паузу",
+          group: "Iteration",
+          desc: "Генераторы дают пошаговое выполнение и отлично подходят для потоков данных и архитектурных моделей.",
+          example: `function* counter() {
+  let i = 0;
+  while (true) yield i++;
+}
+
+const c = counter();
+c.next(); // 0`,
+        },
+        {
+          id: "proxy",
+          term: "Proxy — перехватчик операций",
+          group: "Meta-programming",
+          desc: "Proxy перехватывает get/set/delete/has/construct и другие операции. Используется во Vue, MobX, FormValidation.",
+          example: `const target = { x:10 };
+
+const p = new Proxy(target, {
+  get(obj, prop) {
+    console.log("читают", prop);
+    return obj[prop];
+  }
+});
+
+p.x;`,
+        },
+        {
+          id: "reflect",
+          term: "Reflect — корректный API для низкоуровневых операций",
+          group: "Meta-programming",
+          desc: "Reflect повторяет поведение внутренних операций JavaScript и работает совместно с Proxy.",
+          example: `Reflect.set(obj,"x",20);
+Reflect.get(obj,"x");
+Reflect.has(obj,"x");`,
+        },
+        {
+          id: "weakref",
+          term: "WeakRef и FinalizationRegistry",
+          group: "Memory",
+          desc: "WeakRef хранит слабую ссылку. FinalizationRegistry отслеживает удаление объектов GC.",
+          example: `let obj = { data:10 };
+const ref = new WeakRef(obj);
+
+obj = null; // теперь может быть удалён GC`,
+        },
+        {
+          id: "gc",
+          term: "Управление памятью — GC mark-and-sweep",
+          group: "Memory",
+          desc: "GC помечает доступные объекты и удаляет остальные. Утечки: глобальные переменные, замыкания, таймеры, listeners.",
+          example: `// GC недоступен вручную
+// Нужно избегать утечек памяти`,
+        },
+        {
+          id: "debounce",
+          term: "Оптимизация Event Loop: debounce / throttle",
+          group: "Performance",
+          desc: "Debounce — выполнять после паузы. Throttle — не чаще одного раза.",
+          example: `function debounce(fn,ms){
+  let t;
+  return (...a)=>{
+    clearTimeout(t);
+    t=setTimeout(()=>fn(...a),ms);
+  }
+}`,
+        },
+        {
+          id: "async-generators",
+          term: "Асинхронные генераторы",
+          group: "Iteration",
+          desc: "Комбинация async + generator даёт поток асинхронных данных.",
+          example: `async function* stream(){
+  let i=0;
+  while(i<3){
+    await new Promise(r=>setTimeout(r,500));
+    yield i++;
+  }
+}`,
+        },
+        {
+          id: "patterns",
+          term: "Паттерны проектирования в JS",
+          group: "Architecture",
+          desc: "Модуль, Фабрика, Одиночка, Наблюдатель, Стратегия, Фасад.",
+          example: `// Модуль
+const api = (()=> {
+  const x = 10;
+  return { getX:()=>x };
+})();`,
+        },
+        {
+          id: "functional-patterns",
+          term: "Functional patterns",
+          group: "Architecture",
+          desc: "Карринг, композиция, частичное применение, иммутабельность.",
+          example: `const add = a => b => a + b;
+const add10 = add(10);
+add10(5); // 15`,
+        },
+        {
+          id: "event-emitter",
+          term: "EventEmitter — основа Node.js",
+          group: "Events",
+          desc: "Событийная модель Node основана на EventEmitter.",
+          example: `const EventEmitter = require("events");
+const ee = new EventEmitter();
+
+ee.on("push", d => console.log(d));
+ee.emit("push", 100);`,
+        },
+        {
+          id: "web-workers",
+          term: "Web Workers — многопоточность в браузере",
+          group: "Performance",
+          desc: "Web Worker создаёт отдельный поток выполнения.",
+          example: `const w = new Worker("worker.js");
+w.postMessage("hello");
+w.onmessage = e => console.log(e.data);`,
+        },
+        {
+          id: "service-workers",
+          term: "Service Workers — основа PWA",
+          group: "Performance",
+          desc: "Позволяют кешировать ресурсы, работать offline и перехватывать запросы.",
+          example: `self.addEventListener("fetch",e=>{
+  e.respondWith(caches.match(e.request));
+});`,
+        },
+        {
+          id: "principles",
+          term: "Архитектурные принципы",
+          group: "Architecture",
+          desc: "SOLID, DRY, KISS, YAGNI, Clean Code.",
+          example: `// KISS: делай проще`,
+        },
+        {
+          id: "frameworks",
+          term: "Как пишут фреймворки: Vue/React/Angular",
+          group: "Architecture",
+          desc: "Используют Proxy, Virtual DOM, Observers, Dependency injection, async rendering.",
+          example: `// Virtual DOM — дерево JS-объектов`,
+        },
+      ];
+
+      // ----------- RENDERING -----------
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function render(list) {
+        const content = document.getElementById("content");
+        const toc = document.getElementById("toc");
+        content.innerHTML = "";
+        toc.innerHTML = "";
+        list.forEach((t) => {
+          const link = document.createElement("a");
+          link.href = "#card-" + t.id;
+          link.textContent = t.term;
+          toc.appendChild(link);
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.id = "card-" + t.id;
+          card.innerHTML = `
+      <div class="tag">${t.term}</div>
+      <div class="desc">${t.desc}</div>
+      <button class="copy" data-code="${escapeHtml(
+        t.example
+      )}">копировать</button>
+      <pre><code>${escapeHtml(t.example)}</code></pre>
+    `;
+          content.appendChild(card);
+        });
+      }
+
+      render(TOPICS);
+
+      // ----------- EVENTS -----------
+      q.oninput = () => {
+        const v = q.value.toLowerCase();
+        render(
+          TOPICS.filter((t) => (t.term + t.desc).toLowerCase().includes(v))
+        );
+      };
+      clear.onclick = () => {
+        q.value = "";
+        render(TOPICS);
+      };
+      print.onclick = () => window.print();
+
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          navigator.clipboard.writeText(e.target.dataset.code);
+          e.target.textContent = "✓";
+          setTimeout(() => (e.target.textContent = "копировать"), 800);
+        }
+      });
+    </script>
+  </body>
+</html>

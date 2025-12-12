@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>JS Теория — Часть 2: Объекты, Прототипы, Массивы, Классы</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #99a3b3;
+        --text: #e6eef6;
+        --accent: #6ee7b7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: linear-gradient(180deg, #071126, #071028);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: linear-gradient(180deg, #071631, #041022);
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .brand {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+      .toc {
+        overflow-y: auto;
+        height: calc(100vh - 160px);
+        padding-right: 6px;
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        color: var(--muted);
+        margin-bottom: 6px;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+      .toc a:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+      }
+      .main {
+        padding: 26px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: var(--card);
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      }
+      .tag {
+        color: var(--accent);
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .desc {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      pre {
+        margin-top: 10px;
+        background: #071826;
+        padding: 12px;
+        border-radius: 8px;
+        color: #bfece0;
+        overflow-x: auto;
+      }
+      .copy {
+        float: right;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">JS — Часть 2: Объекты и Прототипы</div>
+
+        <div class="search">
+          <input id="q" placeholder="Поиск темы…" autocomplete="off" />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+
+        <div class="toc" id="toc"></div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">
+              Глубокая теория JavaScript — Объекты, массивы, классы
+            </div>
+            <div class="desc">
+              Полный теоретический фундамент уровня Middle+
+            </div>
+          </div>
+          <button class="btn" id="print">Печать</button>
+          <a class="btn" href="mdule-JS.html">1-Часть</a>
+          <a class="btn" href="mdule-JS3.html">3-Часть</a>
+        </div>
+
+        <section id="content" class="grid"></section>
+      </main>
+    </div>
+
+    <script>
+      const TOPICS = [
+        {
+          id: "objects-basic",
+          term: "Объекты — центральная структура JS",
+          group: "Объекты",
+          desc: "Всё, кроме примитивов, является объектом. Объект — коллекция пар ключ:значение. Ключ всегда строка или символ.",
+          example: `const user = {
+  name: "Dio",
+  age: 18
+};
+
+user.country = "KG";`,
+        },
+        {
+          id: "object-internals",
+          term: "Внутренняя структура объекта",
+          group: "Объекты",
+          desc: "У каждого объекта есть [[Prototype]], собственные свойства и атрибуты свойств (writable, enumerable, configurable).",
+          example: `Object.getPrototypeOf(user);
+Object.setPrototypeOf(user, { x: 10 });`,
+        },
+        {
+          id: "prototype-chain",
+          term: "Прототипы — цепочка поиска свойств",
+          group: "Прототипы",
+          desc: "JS ищет свойство: в объекте → в [[Prototype]] → в цепочке вверх до null. Это фундаментальная модель JS.",
+          example: `user.__proto__;
+Object.getPrototypeOf(user);`,
+        },
+        {
+          id: "object-create",
+          term: "Создание объектов: 4 способа",
+          group: "Объекты",
+          desc: "Литерал, Object.create, функция-конструктор, класс — четыре основных способа создания объектов.",
+          example: `const o = { a: 1 };
+
+const proto = { x: 10 };
+const obj = Object.create(proto);
+
+function User(name){ this.name = name; }
+const u = new User("Dio");
+
+class Admin { constructor(n){ this.name = n } }`,
+        },
+        {
+          id: "object-api",
+          term: "Object API — ключевые методы",
+          group: "Объекты",
+          desc: "Работа с ключами, прототипами, копированием, заморозкой, запечатыванием.",
+          example: `Object.keys(obj);
+Object.values(obj);
+Object.entries(obj);
+
+Object.freeze(obj);
+Object.seal(obj);`,
+        },
+        {
+          id: "arrays-basic",
+          term: "Массивы — расширенный объект",
+          group: "Массивы",
+          desc: "Массив — объект с числовыми ключами и прототипом Array.prototype. length обновляется автоматически.",
+          example: `const arr = [10,20,30];
+arr.length;`,
+        },
+        {
+          id: "arrays-methods",
+          term: "Методы массива — профессиональный набор",
+          group: "Массивы",
+          desc: "Методы делятся на мутирующие (push/pop/splice/sort) и немутирующие (map/filter/reduce).",
+          example: `arr.map(x => x*2);
+arr.filter(x => x>10);
+arr.push(99);`,
+        },
+        {
+          id: "map-set",
+          term: "Map и Set — современные коллекции",
+          group: "Коллекции",
+          desc: "Map позволяет ключами быть любыми значениями. Set хранит только уникальные элементы.",
+          example: `const m = new Map();
+m.set("name","Dio");
+
+const s = new Set([1,2,2,3]);`,
+        },
+        {
+          id: "weakmap-weakset",
+          term: "WeakMap и WeakSet — слабые ссылки",
+          group: "Коллекции",
+          desc: "Хранят слабые ссылки — объект удаляется GC автоматически. Применяются для приватных данных и кешей.",
+          example: `const wm = new WeakMap();
+const obj = {};
+wm.set(obj, "hidden");`,
+        },
+        {
+          id: "destructuring",
+          term: "Деструктуризация объектов и массивов",
+          group: "Синтаксис",
+          desc: "Позволяет доставать значения из объектов и массивов компактно.",
+          example: `const user = { name:"Dio", age:18 };
+const { name, age } = user;
+
+const arr = [1,2,3];
+const [a,b] = arr;`,
+        },
+        {
+          id: "spread-rest",
+          term: "Spread и Rest — современный синтаксис",
+          group: "Синтаксис",
+          desc: "Spread разворачивает массив или объект. Rest собирает оставшиеся параметры.",
+          example: `const arr2 = [...arr];
+
+function sum(...nums){
+  return nums.reduce((a,b)=>a+b);
+}`,
+        },
+        {
+          id: "classes",
+          term: "Классы — современный синтаксис над прототипами",
+          group: "Классы",
+          desc: "Синтаксический сахар над прототипами. Поддерживают методы, наследование и super.",
+          example: `class User {
+  constructor(name){
+    this.name = name;
+  }
+  hi(){ console.log(this.name); }
+}
+
+class Admin extends User {
+  deleteUser(){}
+}`,
+        },
+      ];
+
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function render(list) {
+        const content = document.getElementById("content");
+        const toc = document.getElementById("toc");
+        content.innerHTML = "";
+        toc.innerHTML = "";
+
+        list.forEach((t) => {
+          const link = document.createElement("a");
+          link.href = "#card-" + t.id;
+          link.textContent = t.term;
+          toc.appendChild(link);
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.id = "card-" + t.id;
+          card.innerHTML = `
+            <div class="tag">${t.term}</div>
+            <div class="desc">${t.desc}</div>
+            <button class="copy" data-code="${escapeHtml(
+              t.example
+            )}">копировать</button>
+            <pre><code>${escapeHtml(t.example)}</code></pre>
+          `;
+          content.appendChild(card);
+        });
+      }
+
+      render(TOPICS);
+
+      q.oninput = () => {
+        const v = q.value.toLowerCase();
+        render(
+          TOPICS.filter((t) => (t.term + t.desc).toLowerCase().includes(v))
+        );
+      };
+
+      clear.onclick = () => {
+        q.value = "";
+        render(TOPICS);
+      };
+
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          navigator.clipboard.writeText(e.target.dataset.code);
+          e.target.textContent = "✓";
+          setTimeout(() => (e.target.textContent = "копировать"), 800);
+        }
+      });
+
+      print.onclick = () => window.print();
+    </script>
+  </body>
+</html>

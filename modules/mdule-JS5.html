@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>JS Теория — Часть 5: DOM + Web API</title>
+    <link rel="stylesheet" href="/mobile.css" />
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #99a3b3;
+        --text: #e6eef6;
+        --accent: #6ee7b7;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: linear-gradient(180deg, #071126, #071028);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        background: linear-gradient(180deg, #071631, #041022);
+        padding: 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .brand {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .toc {
+        overflow-y: auto;
+        height: calc(100vh - 160px);
+      }
+      .toc a {
+        display: block;
+        padding: 8px;
+        margin-bottom: 6px;
+        border-radius: 6px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .toc a:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+      }
+      .main {
+        padding: 26px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      }
+      .card {
+        background: var(--card);
+        padding: 18px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .tag {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .desc {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      pre {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #071826;
+        color: #bfece0;
+        overflow-x: auto;
+      }
+      .copy {
+        float: right;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">JS — Часть 5: DOM + Web API</div>
+
+        <div class="search">
+          <input id="q" placeholder="Поиск…" autocomplete="off" />
+          <button class="btn" id="clear">Сброс</button>
+        </div>
+
+        <div class="toc" id="toc"></div>
+      </aside>
+
+      <main class="main">
+        <div class="header">
+          <div>
+            <div class="title">
+              DOM + Web API — Полный профессиональный уровень
+            </div>
+            <div class="desc">
+              Все ключевые механики браузера и взаимодействие с документом.
+            </div>
+          </div>
+          <button class="btn" id="print">Печать</button>
+          <a class="btn" href="mdule-JS4.html">4-Часть</a>
+        </div>
+
+        <section id="content" class="grid"></section>
+      </main>
+    </div>
+
+    <script>
+      // ------------------------------------------------------
+      //   ДАННЫЕ — ЧАСТЬ 5
+      // ------------------------------------------------------
+
+      const TOPICS = [
+        {
+          id: "dom",
+          term: "DOM — дерево документа",
+          group: "DOM",
+          desc: "HTML превращается в структуру объектов. DOM — основная модель браузера: Document → Elements → Nodes.",
+          example: `document.body
+document.documentElement`,
+        },
+
+        {
+          id: "node-types",
+          term: "Типы DOM-узлов",
+          group: "DOM",
+          desc: "Node, Element, Text, Document, DocumentFragment. Почти всё наследуется от Node → Element → HTMLElement.",
+          example: `const text = document.createTextNode("Hi");
+console.log(text.nodeType);`,
+        },
+
+        {
+          id: "query",
+          term: "Выбор элементов",
+          group: "DOM",
+          desc: "Современные методы: querySelector / querySelectorAll. Старые — getElementById, getElementsByTagName.",
+          example: `document.querySelector(".box")
+document.querySelectorAll("div")`,
+        },
+
+        {
+          id: "attributes",
+          term: "Работа с атрибутами",
+          group: "DOM",
+          desc: "getAttribute, setAttribute, removeAttribute — управление любыми атрибутами элемента.",
+          example: `img.setAttribute("src","photo.jpg")`,
+        },
+
+        {
+          id: "classlist",
+          term: "classList — работа с CSS-классами",
+          group: "DOM",
+          desc: "add, remove, toggle — идеальный способ менять состояние элемента.",
+          example: `element.classList.toggle("open")`,
+        },
+
+        {
+          id: "styles",
+          term: "Работа со стилями",
+          group: "DOM",
+          desc: "Стили можно менять напрямую: element.style.property = value.",
+          example: `element.style.color = "red"`,
+        },
+
+        {
+          id: "create",
+          term: "Создание / вставка / удаление элементов",
+          group: "DOM",
+          desc: "document.createElement, append, remove. DocumentFragment — быстрый рендеринг.",
+          example: `const div = document.createElement("div");
+div.textContent="Hello";
+document.body.append(div);`,
+        },
+
+        {
+          id: "events",
+          term: "DOM события",
+          group: "Events",
+          desc: "addEventListener и removeEventListener — базовые механики событий.",
+          example: `button.addEventListener("click",() => console.log("ok"))`,
+        },
+
+        {
+          id: "bubbling",
+          term: "Всплытие / погружение",
+          group: "Events",
+          desc: "События проходят capture → target → bubble. Делегирование — ключевой паттерн.",
+          example: `ul.addEventListener("click",e=>{
+  if(e.target.matches(".item")) console.log("item");
+})`,
+        },
+
+        {
+          id: "cssom",
+          term: "CSSOM — дерево стилей",
+          group: "Rendering",
+          desc: "CSS преобразуется в CSSOM, затем объединяется с DOM для layout.",
+          example: `document.styleSheets`,
+        },
+
+        {
+          id: "reflow",
+          term: "Reflow / Repaint",
+          group: "Rendering",
+          desc: "Reflow — пересчёт геометрии. Repaint — перерисовка. Reflow тяжелее.",
+          example: `element.style.width="200px"`,
+        },
+
+        {
+          id: "clipboard",
+          term: "Clipboard API",
+          group: "APIs",
+          desc: "Современный доступ к буферу обмена.",
+          example: `navigator.clipboard.writeText("Hello")`,
+        },
+
+        {
+          id: "file",
+          term: "File API",
+          group: "APIs",
+          desc: "Позволяет читать локальные файлы пользователя.",
+          example: `input.onchange = e => {
+  const reader = new FileReader();
+  reader.onload = () => console.log(reader.result);
+  reader.readAsText(e.target.files[0]);
+}`,
+        },
+
+        {
+          id: "blob",
+          term: "Blob — бинарные данные",
+          group: "APIs",
+          desc: "Blob хранит бинарные данные и используется в загрузках/скачиваниях.",
+          example: `const blob = new Blob(["Hello"],{type:"text/plain"})`,
+        },
+
+        {
+          id: "url-api",
+          term: "URL API",
+          group: "APIs",
+          desc: "Работа с URL и параметрами запроса.",
+          example: `const url = new URL("https://site.com?q=test");
+url.searchParams.get("q");`,
+        },
+
+        {
+          id: "storage",
+          term: "LocalStorage / SessionStorage",
+          group: "APIs",
+          desc: "Сохранение данных между перезагрузками страницы.",
+          example: `localStorage.setItem("name","Dio")`,
+        },
+
+        {
+          id: "history",
+          term: "History API",
+          group: "APIs",
+          desc: "Управление историей браузера без перезагрузки.",
+          example: `history.pushState({page:1},"","/page1")`,
+        },
+
+        {
+          id: "intersection",
+          term: "IntersectionObserver",
+          group: "Observers",
+          desc: "Отслеживает появление элемента в зоне видимости.",
+          example: `const obs = new IntersectionObserver(e=>{
+  if(e[0].isIntersecting) console.log("видно");
+});
+obs.observe(document.querySelector(".item"));`,
+        },
+
+        {
+          id: "mutation",
+          term: "MutationObserver",
+          group: "Observers",
+          desc: "Следит за изменениями DOM: childList, subtree, attributes.",
+          example: `const obs = new MutationObserver(m=>console.log(m));
+obs.observe(document.body,{childList:true,subtree:true});`,
+        },
+
+        {
+          id: "fetch",
+          term: "Fetch API",
+          group: "Network",
+          desc: "Современный стандарт сетевых запросов.",
+          example: `const data = await fetch("/api").then(r=>r.json())`,
+        },
+
+        {
+          id: "streams",
+          term: "Streams API",
+          group: "Network",
+          desc: "Потоковое чтение больших данных.",
+          example: `const r = await fetch("/video");
+const stream = r.body.getReader();`,
+        },
+
+        {
+          id: "websocket",
+          term: "WebSocket — реальное время",
+          group: "Network",
+          desc: "Двусторонняя связь с сервером.",
+          example: `const ws = new WebSocket("wss://server");
+ws.onmessage = e => console.log(e.data);`,
+        },
+
+        {
+          id: "canvas",
+          term: "Canvas 2D API",
+          group: "Graphics",
+          desc: "Рисование 2D графики в браузере.",
+          example: `const ctx = canvas.getContext("2d");
+ctx.fillRect(0,0,100,100);`,
+        },
+
+        {
+          id: "webgl",
+          term: "WebGL — 3D графика",
+          group: "Graphics",
+          desc: "WebGL позволяет работать с GPU прямо в браузере.",
+          example: `const gl = canvas.getContext("webgl");`,
+        },
+
+        {
+          id: "raf",
+          term: "requestAnimationFrame",
+          group: "Rendering",
+          desc: "Идеальная анимация под частоту монитора.",
+          example: `function loop(){ requestAnimationFrame(loop) }
+loop()`,
+        },
+
+        {
+          id: "performance",
+          term: "Performance API",
+          group: "Performance",
+          desc: "Используется для измерения скорости работы.",
+          example: `console.log(performance.now())`,
+        },
+
+        {
+          id: "navigator",
+          term: "Navigator API",
+          group: "APIs",
+          desc: "Онлайн-статус, геолокация, юзер-агент.",
+          example: `navigator.onLine`,
+        },
+
+        {
+          id: "fullscreen",
+          term: "Fullscreen API",
+          group: "APIs",
+          desc: "Перевод элемента в полноэкранный режим.",
+          example: `element.requestFullscreen()`,
+        },
+
+        {
+          id: "notifications",
+          term: "Notification API",
+          group: "APIs",
+          desc: "Создание уведомлений в системе.",
+          example: `new Notification("Привет!")`,
+        },
+
+        {
+          id: "vibration",
+          term: "Vibration API",
+          group: "APIs",
+          desc: "Вибрация на мобильных устройствах.",
+          example: `navigator.vibrate(200)`,
+        },
+      ];
+
+      // ------------------------------------------------------
+      //   РЕНДЕРИНГ
+      // ------------------------------------------------------
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function render(list) {
+        const content = document.getElementById("content");
+        const toc = document.getElementById("toc");
+        content.innerHTML = "";
+        toc.innerHTML = "";
+        list.forEach((t) => {
+          const a = document.createElement("a");
+          a.href = "#card-" + t.id;
+          a.textContent = t.term;
+          toc.appendChild(a);
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.id = "card-" + t.id;
+
+          card.innerHTML = `
+      <div class="tag">${t.term}</div>
+      <div class="desc">${t.desc}</div>
+      <button class="copy" data-code="${escapeHtml(
+        t.example
+      )}">копировать</button>
+      <pre><code>${escapeHtml(t.example)}</code></pre>
+    `;
+
+          content.appendChild(card);
+        });
+      }
+
+      render(TOPICS);
+
+      // ------------------------------------------------------
+      //   СОБЫТИЯ
+      // ------------------------------------------------------
+
+      q.oninput = () => {
+        const val = q.value.toLowerCase();
+        render(
+          TOPICS.filter((t) => (t.term + t.desc).toLowerCase().includes(val))
+        );
+      };
+
+      clear.onclick = () => {
+        q.value = "";
+        render(TOPICS);
+      };
+
+      print.onclick = () => window.print();
+
+      document.addEventListener("click", (e) => {
+        if (e.target.matches(".copy")) {
+          navigator.clipboard.writeText(e.target.dataset.code);
+          e.target.textContent = "✓";
+          setTimeout(() => (e.target.textContent = "копировать"), 800);
+        }
+      });
+    </script>
+  </body>
+</html>
